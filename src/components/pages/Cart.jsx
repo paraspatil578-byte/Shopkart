@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../Navbar";
+import { ShopKartContext } from "../../context/ShopKartContext";
 import "./Cart.css";
 import "./CartExtras.css";
 
@@ -15,7 +16,8 @@ const toNumber = (value) =>
 
 const formatPrice = (amount) => `₹${amount.toLocaleString("en-IN")}`;
 
-function Cart({ userName, cart = [], dispatch }) {
+function Cart() {
+  const { cart, dispatch } = useContext(ShopKartContext);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   // ---------- Calculations ----------
@@ -44,7 +46,7 @@ function Cart({ userName, cart = [], dispatch }) {
 
   return (
     <>
-      <Navbar userName={userName} cart={cart} />
+      <Navbar />
 
       <div className="cart-page">
         <div className="cart-container">

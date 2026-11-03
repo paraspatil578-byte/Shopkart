@@ -1,23 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../Navbar";
-import productDetails from "../../data/productDetails";
+import { ShopKartContext } from "../../context/ShopKartContext";
+import { findImage } from "../../utils/findImage";
 import "./ProductDetails.css";
 
-function ProductDetails({ userName, cart, dispatch }) {
+function ProductDetails() {
+  const { dispatch, productDetails } = useContext(ShopKartContext);
   const { id } = useParams();
-
   const navigate = useNavigate();
-
   const [quantity, setQuantity] = useState(1);
 
-  // useParams() gives a string ("3"), so convert it to a number before searching
-  const product = productDetails.find((item) => item.id === Number(id));
+  // MockAPI ids can be strings, so compare as numbers
+  const product = productDetails.find(
+    (item) => Number(item.id) === Number(id)
+  );
+
+  // Details are still being fetched from MockAPI
+  if (productDetails.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <main className="product-not-found">
+          <h1>Loading product...</h1>
+        </main>
+      </>
+    );
+  }
 
   if (!product) {
     return (
       <>
-        <Navbar userName={userName} cart={cart} />
+        <Navbar />
 
         <main className="product-not-found">
           <h1>Product Not Found</h1>
@@ -30,15 +44,16 @@ function ProductDetails({ userName, cart, dispatch }) {
   }
 
   const isInStock = product.availability === "In Stock";
+  const productImage = findImage(product.image);
 
   // Only the fields the cart needs (keeps the saved cart small)
   const cartItem = {
-    id: product.id,
+    id: Number(product.id),
     name: product.name,
     category: product.category,
-    image: product.image,
-    price: product.price,
-    originalPrice: product.originalPrice,
+    image: productImage,
+    price: Number(product.price),
+    originalPrice: Number(product.originalPrice),
   };
 
   const addProductToCart = () => {
@@ -65,12 +80,12 @@ function ProductDetails({ userName, cart, dispatch }) {
 
   return (
     <>
-      <Navbar userName={userName} cart={cart} />
+      <Navbar />
 
       <main className="product-details-page">
         <section className="product-overview">
           <div className="product-image-section">
-            <img src={product.image} alt={product.name} />
+            <img src={productImage} alt={product.name} />
           </div>
 
           <div className="product-info-section">
@@ -89,10 +104,10 @@ function ProductDetails({ userName, cart, dispatch }) {
 
             <div className="product-pricing">
               <span className="current-price">
-                ₹{product.price.toLocaleString("en-IN")}
+                ₹{Number(product.price).toLocaleString("en-IN")}
               </span>
               <span className="original-price">
-                ₹{product.originalPrice.toLocaleString("en-IN")}
+                ₹{Number(product.originalPrice).toLocaleString("en-IN")}
               </span>
               <span className="discount">{product.discount} OFF</span>
             </div>
@@ -159,7 +174,7 @@ function ProductDetails({ userName, cart, dispatch }) {
           <h2>Key Features</h2>
 
           <ul>
-            {product.keyFeatures.map((feature, index) => (
+            {(product.keyFeatures || []).map((feature, index) => (
               <li key={index}>{feature}</li>
             ))}
           </ul>
@@ -169,12 +184,14 @@ function ProductDetails({ userName, cart, dispatch }) {
           <h2>Specifications</h2>
 
           <div className="specifications-grid">
-            {Object.entries(product.specifications).map(([key, value]) => (
-              <div key={key}>
-                <strong>{formatKey(key)}</strong>
-                <span>{value}</span>
-              </div>
-            ))}
+            {Object.entries(product.specifications || {}).map(
+              ([key, value]) => (
+                <div key={key}>
+                  <strong>{formatKey(key)}</strong>
+                  <span>{value}</span>
+                </div>
+              )
+            )}
           </div>
         </section>
 
@@ -182,7 +199,7 @@ function ProductDetails({ userName, cart, dispatch }) {
           <h2>Customer Reviews</h2>
 
           <div className="reviews-list">
-            {product.customerReviews.map((review, index) => (
+            {(product.customerReviews || []).map((review, index) => (
               <article className="review-card" key={index}>
                 <h3>{review.name}</h3>
                 <p className="review-rating">⭐ {review.rating}/5</p>

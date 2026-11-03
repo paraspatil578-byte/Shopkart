@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
+import { ShopKartContext } from "../../context/ShopKartContext";
 import "./Login.css";
 import logo from "../../assets/images/logo.png";
 
-function Login({ setUserName }) {
+function Login() {
+  const { setUserName } = useContext(ShopKartContext);
   const navigate = useNavigate();
 
   const {
@@ -14,7 +16,7 @@ function Login({ setUserName }) {
   } = useForm();
 
   const onSubmit = (data) => {
-    if (setUserName) setUserName(data.username);
+    setUserName(data.username);
     navigate("/");
   };
 

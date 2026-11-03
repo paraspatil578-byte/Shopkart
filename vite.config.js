@@ -3,5 +3,5 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Shopkart/',
+  base: process.env.VERCEL ? '/' : '/Shopkart/',
 })

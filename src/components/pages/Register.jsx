@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
+import { ShopKartContext } from "../../context/ShopKartContext";
 import "./Register.css";
 import logo from "../../assets/images/logo.png";
 
-function Register({ setUserName }) {
+function Register() {
+  const { setUserName } = useContext(ShopKartContext);
   const navigate = useNavigate();
 
   const {
@@ -15,7 +17,7 @@ function Register({ setUserName }) {
 
   const onSubmit = (data) => {
     if (data.password === data.confirmPassword) {
-      if (setUserName) setUserName(data.username);
+      setUserName(data.username);
       navigate("/");
     } else {
       alert("Passwords do not match");

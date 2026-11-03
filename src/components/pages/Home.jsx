@@ -107,10 +107,10 @@ const products = [
   },
 ];
 
-function Home({ userName, cart }) {
+function Home() {
   return (
     <>
-      <Navbar userName={userName} cart={cart} />
+      <Navbar />
 
       {/* Hero Section */}
       <section

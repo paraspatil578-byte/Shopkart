@@ -1,4 +1,6 @@
+import { useContext } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { ShopKartContext } from "../context/ShopKartContext";
 import "./Navbar.css";
 
 import logo from "../assets/images/logo.png";
@@ -7,7 +9,8 @@ import cartIcon from "../assets/icons/cart-icon.png";
 import profileIcon from "../assets/icons/profile-icon.png";
 import profileIcon2 from "../assets/icons/profile-icon-2.png";
 
-function Navbar({ userName, cart = [] }) {
+function Navbar() {
+  const { userName, cart } = useContext(ShopKartContext);
   const navigate = useNavigate();
   const location = useLocation();
 
