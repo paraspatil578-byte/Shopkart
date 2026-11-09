@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../Navbar";
 import { ShopKartContext } from "../../context/ShopKartContext";
+import { findImage } from "../../utils/findImage";
 import "./Cart.css";
 import "./CartExtras.css";
 
@@ -10,7 +11,6 @@ import clearCartIcon from "../../assets/icons/clear-cart.png";
 import couponIcon from "../../assets/icons/coupon.png";
 import securityIcon from "../../assets/icons/security-icon.png";
 
-// Works for both 1599 and "1,599"
 const toNumber = (value) =>
   typeof value === "number" ? value : Number(String(value).replace(/,/g, ""));
 
@@ -20,7 +20,6 @@ function Cart() {
   const { cart, dispatch } = useContext(ShopKartContext);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  // ---------- Calculations ----------
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
   const subtotal = cart.reduce(
@@ -51,7 +50,6 @@ function Cart() {
       <div className="cart-page">
         <div className="cart-container">
           {cart.length === 0 ? (
-            /* ---------- Empty Cart ---------- */
             <div className="empty-cart">
               <div className="empty-cart-icon">🛒</div>
 
@@ -65,7 +63,6 @@ function Cart() {
             </div>
           ) : (
             <>
-              {/* ---------- Cart Table ---------- */}
               <div className="cart-table-wrapper">
                 <table className="cart-table">
                   <thead>
@@ -84,7 +81,10 @@ function Cart() {
                         <td>
                           <div className="cart-product">
                             <div className="cart-product-image">
-                              <img src={item.image} alt={item.name} />
+                              <img
+                                src={findImage(item.image) || item.image}
+                                alt={item.name}
+                              />
                             </div>
 
                             <div className="cart-product-info">
@@ -158,7 +158,6 @@ function Cart() {
                   </tbody>
                 </table>
 
-                {/* Clear Cart */}
                 <div className="cart-footer">
                   <button
                     type="button"
@@ -171,7 +170,6 @@ function Cart() {
                 </div>
               </div>
 
-              {/* ---------- Order Summary ---------- */}
               <aside className="cart-sidebar">
                 <div className="order-summary">
                   <h2>Order Summary</h2>
@@ -228,7 +226,6 @@ function Cart() {
                   </button>
                 </div>
 
-                {/* Secure Payment */}
                 <div className="secure-box">
                   <img src={securityIcon} alt="" className="secure-icon" />
 
@@ -244,7 +241,6 @@ function Cart() {
           )}
         </div>
 
-        {/* Continue Shopping */}
         {cart.length > 0 && (
           <div className="cart-navigation">
             <Link to="/products" className="continue-shopping">
@@ -253,7 +249,6 @@ function Cart() {
           </div>
         )}
 
-        {/* Order Placed Popup */}
         {orderPlaced && (
           <div className="order-popup-overlay">
             <div className="order-popup">

@@ -11,12 +11,10 @@ function ProductDetails() {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
 
-  // MockAPI ids can be strings, so compare as numbers
   const product = productDetails.find(
     (item) => Number(item.id) === Number(id)
   );
 
-  // Details are still being fetched from MockAPI
   if (productDetails.length === 0) {
     return (
       <>
@@ -46,12 +44,11 @@ function ProductDetails() {
   const isInStock = product.availability === "In Stock";
   const productImage = findImage(product.image);
 
-  // Only the fields the cart needs (keeps the saved cart small)
   const cartItem = {
     id: Number(product.id),
     name: product.name,
     category: product.category,
-    image: productImage,
+    image: product.image, // file name, resolved in the Cart page
     price: Number(product.price),
     originalPrice: Number(product.originalPrice),
   };
@@ -71,12 +68,22 @@ function ProductDetails() {
     navigate("/cart");
   };
 
-  // wheelType -> Wheel Type
   const formatKey = (key) => {
     return key
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (letter) => letter.toUpperCase());
   };
+
+  const keyFeatures = Array.isArray(product.keyFeatures)
+    ? product.keyFeatures
+    : [];
+  const customerReviews = Array.isArray(product.customerReviews)
+    ? product.customerReviews
+    : [];
+  const specifications =
+    product.specifications && typeof product.specifications === "object"
+      ? product.specifications
+      : {};
 
   return (
     <>
@@ -174,7 +181,7 @@ function ProductDetails() {
           <h2>Key Features</h2>
 
           <ul>
-            {(product.keyFeatures || []).map((feature, index) => (
+            {keyFeatures.map((feature, index) => (
               <li key={index}>{feature}</li>
             ))}
           </ul>
@@ -184,14 +191,12 @@ function ProductDetails() {
           <h2>Specifications</h2>
 
           <div className="specifications-grid">
-            {Object.entries(product.specifications || {}).map(
-              ([key, value]) => (
-                <div key={key}>
-                  <strong>{formatKey(key)}</strong>
-                  <span>{value}</span>
-                </div>
-              )
-            )}
+            {Object.entries(specifications).map(([key, value]) => (
+              <div key={key}>
+                <strong>{formatKey(key)}</strong>
+                <span>{value}</span>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -199,7 +204,7 @@ function ProductDetails() {
           <h2>Customer Reviews</h2>
 
           <div className="reviews-list">
-            {(product.customerReviews || []).map((review, index) => (
+            {customerReviews.map((review, index) => (
               <article className="review-card" key={index}>
                 <h3>{review.name}</h3>
                 <p className="review-rating">⭐ {review.rating}/5</p>

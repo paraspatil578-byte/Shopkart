@@ -1,41 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Navbar";
+import { ShopKartContext } from "../../context/ShopKartContext";
+import { findImage } from "../../utils/findImage";
 import "./Product.css";
 
-// Load every image in the folder. A missing file will NOT crash the app.
-const imageModules = import.meta.glob(
-  "../../assets/images/products/*.{png,jpg,jpeg,webp,svg}",
-  { eager: true, import: "default" }
-);
-
-// Matches ignoring case, "-" vs "_" and extension (trolley-bag = Trolley_Bag.png)
-const normalize = (text) =>
-  text.toLowerCase().replace(/\.[a-z]+$/, "").replace(/[^a-z0-9]/g, "");
-
-const findImage = (fileName) => {
-  const key = Object.keys(imageModules).find(
-    (path) => normalize(path.split("/").pop()) === normalize(fileName)
-  );
-  if (!key) console.warn("Image file not found in products folder:", fileName);
-  return key ? imageModules[key] : undefined;
-};
-
-const samsungPhone = findImage("Samsung_phone.png");
-const pumaShoes = findImage("puma_shoes.png");
-const amazonEcho = findImage("amazon_echo_dot.png");
-const trolleyBag = findImage("trolley-bag.png");
-const keyboard = findImage("keyboard.png");
-const thermosBottle = findImage("thermos-bottle.png");
-const lipstickSet = findImage("lipstick-set.png");
-const jeans = findImage("jeans-1.png");
-const mixerGrinder = findImage("mixer-grinder.png");
-const printer = findImage("printer.png");
-const skincareCombo = findImage("skincare-combo.png");
-const nonstickPan = findImage("nonstick-pan.png");
-
-// Local fallback (no external request, works offline)
 const FALLBACK_IMAGE =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -46,153 +16,6 @@ const FALLBACK_IMAGE =
     </svg>`
   );
 
-const products = [
-  {
-    id: 1,
-    name: "Samsung Galaxy M14 5G",
-    category: "Electronics",
-    price: "12,499",
-    originalPrice: "14,999",
-    rating: 4.4,
-    reviews: 1850,
-    discount: "17%",
-    isAvailable: true,
-    image: samsungPhone,
-  },
-  {
-    id: 2,
-    name: "Puma Running Shoes",
-    category: "Fashion",
-    price: "2,499",
-    originalPrice: "3,999",
-    rating: 3.8,
-    reviews: 1320,
-    discount: "38%",
-    isAvailable: true,
-    image: pumaShoes,
-  },
-  {
-    id: 3,
-    name: "Amazon Echo Dot",
-    category: "Electronics",
-    price: "3,499",
-    originalPrice: "4,499",
-    rating: 4.6,
-    reviews: 2450,
-    discount: "22%",
-    isAvailable: true,
-    image: amazonEcho,
-  },
-  {
-    id: 4,
-    name: "American Tourister Trolley Bag",
-    category: "Fashion",
-    price: "3,299",
-    originalPrice: "4,999",
-    rating: 2.9,
-    reviews: 970,
-    discount: "34%",
-    isAvailable: false,
-    image: trolleyBag,
-  },
-  {
-    id: 5,
-    name: "HP Wireless Keyboard",
-    category: "Electronics",
-    price: "899",
-    originalPrice: "1,299",
-    rating: 4.2,
-    reviews: 760,
-    discount: "31%",
-    isAvailable: true,
-    image: keyboard,
-  },
-  {
-    id: 6,
-    name: "Milton Thermosteel Bottle",
-    category: "Home & Kitchen",
-    price: "799",
-    originalPrice: "1,099",
-    rating: 3.5,
-    reviews: 1540,
-    discount: "27%",
-    isAvailable: true,
-    image: thermosBottle,
-  },
-  {
-    id: 7,
-    name: "Maybelline Lipstick Set",
-    category: "Beauty",
-    price: "399",
-    originalPrice: "749",
-    rating: 5.0,
-    reviews: 820,
-    discount: "47%",
-    isAvailable: true,
-    image: lipstickSet,
-  },
-  {
-    id: 8,
-    name: "Levi's Casual Jeans",
-    category: "Fashion",
-    price: "1,899",
-    originalPrice: "2,999",
-    rating: 4.6,
-    reviews: 2100,
-    discount: "37%",
-    isAvailable: true,
-    image: jeans,
-  },
-  {
-    id: 9,
-    name: "Bajaj Mixer Grinder",
-    category: "Home & Kitchen",
-    price: "2,799",
-    originalPrice: "3,499",
-    rating: 2.4,
-    reviews: 690,
-    discount: "20%",
-    isAvailable: false,
-    image: mixerGrinder,
-  },
-  {
-    id: 10,
-    name: "Canon Inkjet Printer",
-    category: "Electronics",
-    price: "5,499",
-    originalPrice: "6,499",
-    rating: 3.2,
-    reviews: 540,
-    discount: "15%",
-    isAvailable: true,
-    image: printer,
-  },
-  {
-    id: 11,
-    name: "Nivea Skincare Combo",
-    category: "Beauty",
-    price: "599",
-    originalPrice: "799",
-    rating: 4.5,
-    reviews: 1280,
-    discount: "25%",
-    isAvailable: true,
-    image: skincareCombo,
-  },
-  {
-    id: 12,
-    name: "Cello Non-Stick Pan",
-    category: "Home & Kitchen",
-    price: "999",
-    originalPrice: "1,399",
-    rating: 2.8,
-    reviews: 475,
-    discount: "29%",
-    isAvailable: true,
-    image: nonstickPan,
-  },
-];
-
 const CATEGORIES = [
   "Electronics",
   "Fashion",
@@ -202,11 +25,12 @@ const CATEGORIES = [
   "Books",
 ];
 
-// Converts "12,499" (or 12499) into the number 12499
 const toNumber = (value) =>
   typeof value === "number" ? value : Number(String(value).replace(/,/g, ""));
 
-function Products({ userName, cart, dispatch }) {
+function Products() {
+  const { products, dispatch, loading, error } = useContext(ShopKartContext);
+
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [maxPrice, setMaxPrice] = useState(20000);
   const [selectedRating, setSelectedRating] = useState(0);
@@ -214,22 +38,39 @@ function Products({ userName, cart, dispatch }) {
   const [addedProductId, setAddedProductId] = useState(null);
   const navigate = useNavigate();
 
-  // LAB 9 - Task 1: sorting state
   const [sortOption, setSortOption] = useState("");
-
-  // LAB 9 - Task 2: pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 8;
 
-  // LAB 9 - Task 2: go back to page 1 when sorting changes
   useEffect(() => {
     setCurrentPage(1);
   }, [sortOption]);
 
-  // LAB 9 - Task 2: go back to page 1 when any filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategories, maxPrice, selectedRating, availability]);
+
+  // Loading and error screens (must stay AFTER all hooks)
+  if (loading) {
+    return (
+      <div className="loading-message">
+        <div className="loading-spinner"></div>
+        <h2>Loading Products</h2>
+        <p>Please wait while we fetch the latest products...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-message">
+        <div className="error-icon">!</div>
+        <h2>Oops! Something went wrong</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((previous) =>
@@ -255,22 +96,20 @@ function Products({ userName, cart, dispatch }) {
   };
 
   const addToCart = (event, product) => {
-    // Don't open the details page when the button is clicked
     event.stopPropagation();
 
     dispatch({
       type: "ADD_ITEM",
       payload: {
-        id: product.id,
+        id: Number(product.id),
         name: product.name,
         category: product.category,
-        image: product.image,
+        image: product.image, // file name, resolved in the Cart page
         price: toNumber(product.price),
         originalPrice: toNumber(product.originalPrice),
       },
     });
 
-    // Show "Added to Cart" for 2 seconds
     setAddedProductId(product.id);
 
     setTimeout(() => {
@@ -280,7 +119,7 @@ function Products({ userName, cart, dispatch }) {
 
   const handleImageError = (event, product) => {
     console.error("Image failed to load:", product.name, product.image);
-    event.currentTarget.onerror = null; // stop any error loop
+    event.currentTarget.onerror = null;
     event.currentTarget.src = FALLBACK_IMAGE;
   };
 
@@ -289,9 +128,9 @@ function Products({ userName, cart, dispatch }) {
       selectedCategories.length === 0 ||
       selectedCategories.includes(product.category);
 
-    const priceMatch = Number(product.price.replace(/,/g, "")) <= maxPrice;
+    const priceMatch = toNumber(product.price) <= maxPrice;
 
-    const ratingMatch = product.rating >= selectedRating;
+    const ratingMatch = Number(product.rating) >= selectedRating;
 
     const availabilityMatch =
       availability === "" ||
@@ -301,50 +140,32 @@ function Products({ userName, cart, dispatch }) {
     return categoryMatch && priceMatch && ratingMatch && availabilityMatch;
   });
 
-  // LAB 9 - Task 1: copy the filtered list so sort() doesn't change the original
   let sortedProducts = [...filteredProducts];
 
-  // Price sorting
   if (sortOption === "price-low") {
-    sortedProducts.sort(
-      (a, b) =>
-        Number(String(a.price).replace(/,/g, "")) -
-        Number(String(b.price).replace(/,/g, ""))
-    );
+    sortedProducts.sort((a, b) => toNumber(a.price) - toNumber(b.price));
   }
-
   if (sortOption === "price-high") {
-    sortedProducts.sort(
-      (a, b) =>
-        Number(String(b.price).replace(/,/g, "")) -
-        Number(String(a.price).replace(/,/g, ""))
-    );
+    sortedProducts.sort((a, b) => toNumber(b.price) - toNumber(a.price));
   }
-
-  // Rating sorting
   if (sortOption === "rating-high") {
     sortedProducts.sort((a, b) => b.rating - a.rating);
   }
-
   if (sortOption === "rating-low") {
     sortedProducts.sort((a, b) => a.rating - b.rating);
   }
-
-  // Popularity sorting (more reviews = more popular)
   if (sortOption === "popular") {
     sortedProducts.sort((a, b) => b.reviews - a.reviews);
   }
 
-  // LAB 9 - Task 2: pagination calculations
   const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
-
   const startIndex = (currentPage - 1) * productsPerPage;
   const endIndex = startIndex + productsPerPage;
   const currentProducts = sortedProducts.slice(startIndex, endIndex);
 
   return (
     <>
-      <Navbar userName={userName} cart={cart} />
+      <Navbar />
 
       <main className="products-page">
         <section className="products-banner">
@@ -442,7 +263,6 @@ function Products({ userName, cart, dispatch }) {
                 Showing {sortedProducts.length} of {products.length} products
               </p>
 
-              {/* LAB 9 - Task 1: sort dropdown */}
               <div className="sort-section">
                 <label htmlFor="sort">Sort By:</label>
 
@@ -462,7 +282,6 @@ function Products({ userName, cart, dispatch }) {
             </div>
 
             <div className="products-grid">
-              {/* LAB 9: condition uses the full sorted list, map uses only the current page */}
               {sortedProducts.length > 0 ? (
                 currentProducts.map((product) => (
                   <div
@@ -493,7 +312,7 @@ function Products({ userName, cart, dispatch }) {
                       </button>
 
                       <img
-                        src={product.image || FALLBACK_IMAGE}
+                        src={findImage(product.image) || FALLBACK_IMAGE}
                         alt={product.name}
                         loading="lazy"
                         onError={(event) => handleImageError(event, product)}
@@ -508,8 +327,11 @@ function Products({ userName, cart, dispatch }) {
                       <h3>{product.name}</h3>
 
                       <div className="rating">
-                        ⭐ {product.rating.toFixed(1)}
-                        <span> ({product.reviews.toLocaleString("en-IN")})</span>
+                        ⭐ {Number(product.rating).toFixed(1)}
+                        <span>
+                          {" "}
+                          ({Number(product.reviews).toLocaleString("en-IN")})
+                        </span>
                       </div>
 
                       <div className="product-price">
@@ -543,7 +365,6 @@ function Products({ userName, cart, dispatch }) {
               )}
             </div>
 
-            {/* LAB 9 - Task 2: pagination buttons below the product grid */}
             {totalPages > 1 && (
               <div className="pagination">
                 <button
